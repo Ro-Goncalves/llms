@@ -1,6 +1,7 @@
 from langchain.document_loaders import TextLoader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.embeddings import LlamaCppEmbeddings
+from langchain.vectorstores import Chroma
 
 #load Doc
 loader = TextLoader("./docs/file.txt")
@@ -35,6 +36,17 @@ print("Len embedded texts: "   + str(len(embedded_texts[0])) + "\n")
 
 # embed query
 query = "What skills did batman had?"
-embedded_query = embeddings.aembed_query(query)
-#print("Len embedded query: "    + str(len(embedded_query)))
-#print("Vector representation: " + str(embedded_query[:4]))
+embedded_query = embeddings.embed_query(query)
+print("Len embedded query: " + str(len(embedded_query)))
+
+# Create a Chroma vectorstore
+db = Chroma.from_documents(texts, embeddings)
+
+# Perform similary search
+_docs = db.similarity_search(query, k=1)
+print(_docs[0].page_content)
+
+query = "Who is an orphan here"
+query_vector = embeddings.embed_query(query)
+_docs = db.similarity_search_by_vector(query_vector, k=1)
+print("\n" + str(_docs[0].page_content))
